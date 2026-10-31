@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply font-sans text-slate-100 antialiased;
+  background: linear-gradient(160deg, #161c2b 0%, #232b45 55%, #2a3350 100%);
+  background-attachment: fixed;
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
