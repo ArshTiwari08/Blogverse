@@ -24,6 +24,7 @@ export default function Post() {
     if (!post || !userData) return
     const run = async () => {
       if (post.userId !== userData.$id) await service.recordView(post.$id, userData.$id)
+      else console.log('[views] you are the author of this post, so your visit is not counted')
       setViews(await service.getViewCount(post.$id))
     }
     run()

@@ -6,7 +6,7 @@ import { getOwnerName } from '../conf/users'
 
 const plainText = (html = '') => html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim()
 
-function PostCard({ $id, title, content, featuredImage, status, ownerName, userId, $createdAt, showStatus = false, viewedByMe = false }) {
+function PostCard({ $id, title, content, featuredImage, status, ownerName, userId, category, $createdAt, showStatus = false, viewedByMe = false }) {
   const [views, setViews] = useState(null)
   useEffect(() => { service.getViewCount($id).then(setViews) }, [$id])
   const name = getOwnerName({ ownerName, userId })
@@ -43,6 +43,7 @@ function PostCard({ $id, title, content, featuredImage, status, ownerName, userI
       </div>
 
       <div className="flex-1 p-4">
+        <span className="inline-block mb-2 text-xs font-semibold px-2.5 py-1 rounded-full bg-coral-500/10 text-coral-600">{category || 'Other'}</span>
         <h3 className="font-display text-xl font-semibold leading-snug line-clamp-2">{title}</h3>
         {text && <p className="mt-2 text-sm leading-relaxed text-slate-600 line-clamp-3">{text}</p>}
       </div>

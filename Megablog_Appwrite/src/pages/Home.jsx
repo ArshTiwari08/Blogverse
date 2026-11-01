@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import service from '../Appwrite/config'
 import { getOwnerName } from '../conf/users'
+import { categories } from '../conf/categories'
 import { Container, PostCard, Button } from '../components'
 
 function Home() {
@@ -11,6 +12,8 @@ function Home() {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('All')
+  const [openCat, setOpenCat] = useState(false)
   const [viewed, setViewed] = useState(new Set())
 
   useEffect(() => {
@@ -24,8 +27,10 @@ function Home() {
 
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase()
-    return q ? posts.filter((p) => p.title.toLowerCase().includes(q) || getOwnerName(p).toLowerCase().includes(q)) : posts
-  }, [posts, search])
+    return posts
+      .filter((p) => category === 'All' || (p.category || 'Other') === category)
+      .filter((p) => !q || p.title.toLowerCase().includes(q) || getOwnerName(p).toLowerCase().includes(q))
+  }, [posts, search, category])
 
   if (!authStatus) {
     return (
@@ -65,17 +70,55 @@ function Home() {
         </div>
       </section>
 
-      <div className="mt-10 flex items-baseline justify-between">
-        <h2 className="font-display text-3xl font-bold text-white">All stories</h2>
-        <span className="text-sm text-slate-300">{shown.length} {shown.length === 1 ? 'story' : 'stories'}</span>
+      <div className="mt-10 flex items-center justify-between gap-4">
+        <h2 className="font-display text-3xl font-bold text-white">{category === 'All' ? 'All stories' : `${category} stories`}</h2>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-slate-300">{shown.length} {shown.length === 1 ? 'story' : 'stories'}</span>
+
+          {/* category filter */}
+          <div className="relative">
+            <button
+              onClick={() => setOpenCat(!openCat)}
+              aria-haspopup="listbox"
+              aria-expanded={openCat}
+              aria-label="Filter by category"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white text-sm transition-colors"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
+                <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+              </svg>
+              <span className="hidden sm:inline">{category === 'All' ? 'Category' : category}</span>
+            </button>
+            {openCat && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setOpenCat(false)} />
+                <ul role="listbox" className="absolute right-0 z-20 mt-2 w-52 rounded-xl bg-ink-800 border border-white/15 shadow-2xl p-1">
+                  {['All', ...categories].map((c) => (
+                    <li key={c}>
+                      <button
+                        role="option"
+                        aria-selected={c === category}
+                        onClick={() => { setCategory(c); setOpenCat(false) }}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${c === category ? 'bg-coral-500 text-white' : 'text-slate-200 hover:bg-white/10'}`}
+                      >
+                        {c === 'All' ? 'All categories' : c}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       {loading ? (
         <p className="mt-10 text-slate-300">Loading stories…</p>
       ) : shown.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-white/20 p-10 text-center">
-          <p className="text-slate-200">{search ? 'No stories match your search.' : 'No stories yet. Be the first to write one.'}</p>
-          {!search && <Link to="/add-post"><Button className="mt-4">Write a story</Button></Link>}
+          <p className="text-slate-200">{search || category !== 'All' ? 'No stories match your filter.' : 'No stories yet. Be the first to write one.'}</p>
+          {!search && category === 'All' && <Link to="/add-post"><Button className="mt-4">Write a story</Button></Link>}
         </div>
       ) : (
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

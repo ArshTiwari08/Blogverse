@@ -7,6 +7,7 @@ import Button from '../Button'
 import Input from '../Input'
 import Select from '../Select'
 import RTE from '../RTE'
+import { categories } from '../../conf/categories'
 
 export default function PostForm({ post }) {
   const navigate = useNavigate()
@@ -20,6 +21,7 @@ export default function PostForm({ post }) {
       slug: post?.$id || '',
       content: post?.content || '',
       status: post?.status || 'active',
+      category: post?.category || 'Other',
     },
   })
 
@@ -76,6 +78,7 @@ export default function PostForm({ post }) {
         {post && (
           <img src={service.getFilePreview(post.featuredImage)} alt={post.title} className="rounded-xl w-full" />
         )}
+        <Select options={categories} label="Category" {...register('category', { required: true })} />
         <Select options={['active', 'inactive']} label="Status" {...register('status', { required: true })} />
         <Button type="submit" className="w-full" disabled={saving}>
           {saving ? 'Saving…' : post ? 'Update post' : 'Publish post'}

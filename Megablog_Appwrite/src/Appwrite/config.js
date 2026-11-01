@@ -13,18 +13,18 @@ export class Service {
   }
 
   // CREATE  (slug is used as the document id)
-  async createPost({ title, slug, content, featuredImage, status, userId, ownerName }) {
+  async createPost({ title, slug, content, featuredImage, status, userId, ownerName, category }) {
     return await this.databases.createDocument(
       conf.appwriteDatabaseId, conf.appwriteCollectionId, slug,
-      { title, content, featuredImage, status, userId, ownerName }
+      { title, content, featuredImage, status, userId, ownerName, category }
     )
   }
 
   // UPDATE
-  async updatePost(slug, { title, content, featuredImage, status }) {
+  async updatePost(slug, { title, content, featuredImage, status, category }) {
     return await this.databases.updateDocument(
       conf.appwriteDatabaseId, conf.appwriteCollectionId, slug,
-      { title, content, featuredImage, status }
+      { title, content, featuredImage, status, category }
     )
   }
 
@@ -67,6 +67,7 @@ export class Service {
 
   async recordView(postId, userId) {
     const key = postId + userId
+    console.log('[views] table:', conf.appwriteViewsCollectionId, '| post:', postId, '| user:', userId)
     if (this.viewing.has(key)) return // blocks the double call from React StrictMode
     this.viewing.add(key)
     try {
@@ -74,6 +75,9 @@ export class Service {
         [Query.equal('postId', postId), Query.equal('userId', userId), Query.limit(1)])
       if (found.total === 0) {
         await this.databases.createDocument(conf.appwriteDatabaseId, conf.appwriteViewsCollectionId, ID.unique(), { postId, userId })
+        console.log('[views] view saved')
+      } else {
+        console.log('[views] already counted for this user')
       }
     } catch (error) {
       console.log('Appwrite recordView error:', error)
